@@ -2,75 +2,52 @@ const express = require("express");
 const router = express.Router();
 const db = require("../data/db-config.js");
 
-router.get("/", (req, res) => {
-  db("vehicles")
-    .then((vehicles) => {
-      res.status(200).json(vehicles);
-    })
-    .catch((err) => {
-      console.log("Error for 'GET' vehicles: ", err);
-      res.status(500).json({ errorMessage: "Failed to retrieve vehicles" });
-    });
+router.get("/", async (req, res, next) => {
+  try {
+    const vehicles = await db("vehicles");
+    res.status(200).json(vehicles);
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
-
-  db("vehicles")
-    .where({ id })
-    .first()
-    .then((vehicle) => {
-      res.status(200).json(vehicle);
-    })
-    .catch((err) => {
-      console.log("Error for 'GET' vehicle: ", err);
-      res.status(500).json({ errorMessage: "Failed to retrieve vehicle" });
-    });
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const vehicle = await db("vehicles").where({ id }).first();
+    res.status(200).json(vehicle);
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post("/", (req, res) => {
-  const vehicleData = req.body;
-
-  db("vehicles")
-    .insert(vehicleData)
-    .then((vehicle) => {
-      res.status(201).json(vehicle);
-    })
-    .catch((err) => {
-      console.log("Error for 'Post' new vehicle", err);
-      res.status(500).json({ errorMessage: "Failed to add vehicle" });
-    });
+router.post("/", async (req, res, next) => {
+  try {
+    const newVehicle = await db("vehicles").insert(req.body);
+    res.status(200).json(newVehicle);
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.delete("/:id", (req, res) => {
-  const { id } = req.params;
-
-  db("vehicles")
-    .where({ id })
-    .del()
-    .then(() => {
-      res.status(201).json({ message: "Vehicle successfully removed.." });
-    })
-    .catch((err) => {
-      console.log("Error for 'DELETE' vehicle: ", err);
-      res.status(500).json({ errorMessage: "Failed to add vehicle" });
-    });
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await db("vehicles").where({ id }).del();
+    res.status(200).json({ message: "Vehicle successfully removed.." });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.put("/:id", (req, res) => {
-  const vehicleData = req.body;
-  const { id } = req.params;
-
-  db("vehicles")
-    .where({ id })
-    .update(vehicleData)
-    .then((vehicle) => {
-      res.status(201).json(vehicle);
-    })
-    .catch((err) => {
-      console.log("Error for 'PUT' vehicle: ", err);
-      res.status(500).json({ errorMessage: "Failed to add vehicle" });
-    });
+router.put("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const newVehicle = await db("vehicles").where({ id }).update(req.body);
+    res.status(200).json(newVehicle);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;
